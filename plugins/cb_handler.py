@@ -35,7 +35,7 @@ async def callback_handler(c: Client, cb: CallbackQuery):
     # async def cb_handler(c: Client, cb: CallbackQuery):
     if cb.data == "merge":
         await cb.message.edit(
-            text="Okay I'll upload to drive\nDo you want to rename? Default file name is **[@yashoswalyo]_merged.mkv**",
+            text="Okay I'll upload to drive\nDo you want to rename? Default file name is **media.file_name**",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -67,7 +67,7 @@ async def callback_handler(c: Client, cb: CallbackQuery):
     elif cb.data == "document":
         UPLOAD_AS_DOC.update({f"{cb.from_user.id}": True})
         await cb.message.edit(
-            text="Do you want to rename? Default file name is **[@yashoswalyo]_merged.mkv**",
+            text="Do you want to rename? Default file name is **media.file_name**",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -83,7 +83,7 @@ async def callback_handler(c: Client, cb: CallbackQuery):
     elif cb.data == "video":
         UPLOAD_AS_DOC.update({f"{cb.from_user.id}": False})
         await cb.message.edit(
-            text="Do you want to rename? Default file name is **[@yashoswalyo]_merged.mkv**",
+            text="Do you want to rename? Default file name is **media.file_name**",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -113,7 +113,7 @@ async def callback_handler(c: Client, cb: CallbackQuery):
         user = UserSettings(cb.from_user.id, cb.from_user.first_name)
         if "YES" in cb.data:
             await cb.message.edit(
-                "Current filename: **[@yashoswalyo]_merged.mkv**\n\nSend me new file name without extension: You have 1 minute"
+                "Current filename: **media.file_name**\n\nSend me new file name without extension: You have 1 minute"
             )
             res: Message = await c.listen(
                 (cb.message.chat.id,None,None), filters=filters.text, timeout=150
