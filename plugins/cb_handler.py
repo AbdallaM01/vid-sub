@@ -35,6 +35,39 @@ async def callback_handler(c: Client, cb: CallbackQuery):
     # async def cb_handler(c: Client, cb: CallbackQuery):
     if cb.data == "merge":
         await cb.message.edit(
+            text="Where do you want to upload?",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "📤 To Telegram", callback_data="to_telegram"
+                        ),
+                        InlineKeyboardButton("🌫️ To Drive", callback_data="to_drive"),
+                    ],
+                    [InlineKeyboardButton("⛔ Cancel ⛔", callback_data="cancel")],
+                ]
+            ),
+        )
+        return
+
+    elif cb.data == "to_drive":
+        try:
+            urc = await database.getUserRcloneConfig(cb.from_user.id)
+            await c.download_media(
+                message=urc, file_name=f"userdata/{cb.from_user.id}/rclone.conf"
+            )
+        except Exception as err:
+            await cb.message.reply_text("Rclone not Found, Unable to upload to drive")
+        if os.path.exists(f"userdata/{cb.from_user.id}/rclone.conf") is False:
+            await cb.message.delete()
+            await delete_all(root=f"downloads/{cb.from_user.id}/")
+            queueDB.update(
+                {cb.from_user.id: {"videos": [], "subtitles": [], "audios": []}}
+            )
+            formatDB.update({cb.from_user.id: None})
+            return
+        UPLOAD_TO_DRIVE.update({f"{cb.from_user.id}": True})        
+        await cb.message.edit(
             text="Okay I'll upload to drive\nDo you want to rename? Default file name is **[@yashoswalyo]_merged.mkv**",
             reply_markup=InlineKeyboardMarkup(
                 [
