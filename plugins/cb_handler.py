@@ -35,6 +35,55 @@ async def callback_handler(c: Client, cb: CallbackQuery):
     # async def cb_handler(c: Client, cb: CallbackQuery):
     if cb.data == "merge":
         await cb.message.edit(
+            text="Where do you want to upload?",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "📤 To Telegram", callback_data="to_telegram"
+                        ),
+                        InlineKeyboardButton("🌫️ To Drive", callback_data="to_drive"),
+                    ],
+                    [InlineKeyboardButton("⛔ Cancel ⛔", callback_data="cancel")],
+                ]
+            ),
+        )
+        return
+
+    elif cb.data == "to_drive":
+        try:
+            urc = await database.getUserRcloneConfig(cb.from_user.id)
+            await c.download_media(
+                message=urc, file_name=f"userdata/{cb.from_user.id}/rclone.conf"
+            )
+        except Exception as err:
+            await cb.message.reply_text("Rclone not Found, Unable to upload to drive")
+        if os.path.exists(f"userdata/{cb.from_user.id}/rclone.conf") is False:
+            await cb.message.delete()
+            await delete_all(root=f"downloads/{cb.from_user.id}/")
+            queueDB.update(
+                {cb.from_user.id: {"videos": [], "subtitles": [], "audios": []}}
+            )
+            formatDB.update({cb.from_user.id: None})
+            return
+        UPLOAD_TO_DRIVE.update({f"{cb.from_user.id}": True})
+        await cb.message.edit(
+            text="Okay I'll upload to drive\nDo you want to rename? Default file name is **[@yashoswalyo]_merged.mkv**",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("👆 Default", callback_data="rename_NO"),
+                        InlineKeyboardButton("✍️ Rename", callback_data="rename_YES"),
+                    ],
+                    [InlineKeyboardButton("⛔ Cancel ⛔", callback_data="cancel")],
+                ]
+            ),
+        )
+        return
+
+    elif cb.data == "to_telegram":
+        UPLOAD_TO_DRIVE.update({f"{cb.from_user.id}": False})
+        await cb.message.edit(
             text="How do yo want to upload file",
             reply_markup=InlineKeyboardMarkup(
                 [
@@ -51,7 +100,7 @@ async def callback_handler(c: Client, cb: CallbackQuery):
     elif cb.data == "document":
         UPLOAD_AS_DOC.update({f"{cb.from_user.id}": True})
         await cb.message.edit(
-            text="Do you want to rename? Default file name is **media.file_name**",
+            text="Do you want to rename? Default file name is **[@yashoswalyo]_merged.mkv**",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -67,7 +116,7 @@ async def callback_handler(c: Client, cb: CallbackQuery):
     elif cb.data == "video":
         UPLOAD_AS_DOC.update({f"{cb.from_user.id}": False})
         await cb.message.edit(
-            text="Do you want to rename? Default file name is **media.file_name**",
+            text="Do you want to rename? Default file name is **[@yashoswalyo]_merged.mkv**",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -97,7 +146,7 @@ async def callback_handler(c: Client, cb: CallbackQuery):
         user = UserSettings(cb.from_user.id, cb.from_user.first_name)
         if "YES" in cb.data:
             await cb.message.edit(
-                "Current filename: **file_name**\n\nSend me new file name without extension: You have 1 minute"
+                "Current filename: **[@yashoswalyo]_merged.mkv**\n\nSend me new file name without extension: You have 1 minute"
             )
             res: Message = await c.listen(
                 (cb.message.chat.id,None,None), filters=filters.text, timeout=150
@@ -115,7 +164,7 @@ async def callback_handler(c: Client, cb: CallbackQuery):
             return
         if "NO" in cb.data:
             new_file_name = (
-                f"downloads/{str(cb.from_user.id)}/[file_name.mkv"
+                f"downloads/{str(cb.from_user.id)}/[@yashoswalyo]_merged.mkv"
             )
             if user.merge_mode == 1:
                 await mergeNow(c, cb, new_file_name)
