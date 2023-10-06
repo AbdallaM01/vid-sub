@@ -147,7 +147,7 @@ def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
         muxcmd.append("-map")
         muxcmd.append(f"{j}:s")
         muxcmd.append(f"-metadata:s:s:{subTrack}")
-        muxcmd.append(f"title=Arabic {subTrack+1} - tg@ArrowFlix")
+        muxcmd.append(f"title=Arabic @ArrowFlix")
         subTrack += 1
     muxcmd.append("-c:v")
     muxcmd.append("copy")
